@@ -3,50 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Fitness App Pro</title>
+    <title>Fitness App - Ariel</title>
+    
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
     
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-
-    <style>
-        body { margin: 0; background-color: #020617; color: white; font-family: system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slide-up { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .animate-in { animation: fade-in 0.3s ease-out; }
-        .animate-up { animation: slide-up 0.4s ease-out; }
-    </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
+        // --- הכנת הסביבה לקוד המקורי ---
         const { useState, useEffect, useRef, useMemo } = React;
-        
-        // יצירת רכיבי האייקונים מהספריה
-        const Icons = {
-            Dumbbell: (props) => <i data-lucide="dumbbell" {...props}></i>,
-            Flame: (props) => <i data-lucide="flame" {...props}></i>,
-            BarChart2: (props) => <i data-lucide="bar-chart-2" {...props}></i>,
-            Clock: (props) => <i data-lucide="clock" {...props}></i>,
-            History: (props) => <i data-lucide="history" {...props}></i>,
-            CalendarDays: (props) => <i data-lucide="calendar-days" {...props}></i>,
-            LayoutDashboard: (props) => <i data-lucide="layout-dashboard" {...props}></i>,
-            Play: (props) => <i data-lucide="play" {...props}></i>,
-            Youtube: (props) => <i data-lucide="youtube" {...props}></i>,
-            CheckCircle2: (props) => <i data-lucide="check-circle-2" {...props}></i>
-        };
+        const { 
+            Dumbbell, Flame, BarChart2, Clock, History, CalendarDays, 
+            LayoutDashboard, Play, Youtube, CheckCircle2, Plus, Timer, X, Send
+        } = lucide;
 
-        // אתחול Firebase (השתמש ב-Config המקורי שלך כאן)
+        // הגדרות Firebase (תדביק כאן את ה-Config שלך אם הוא שונה)
         const firebaseConfig = {
-            apiKey: "AIzaSy...", // כאן תדביק את ה-API Key שלך מהקוד המקורי
-            authDomain: "fitness-app...",
+            apiKey: "AIzaSy...", 
+            authDomain: "fitness-app-...",
             projectId: "fitness-app-...",
             storageBucket: "fitness-app-...",
             messagingSenderId: "...",
@@ -56,82 +38,93 @@
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // --- כאן מתחילה פונקציית האפליקציה המקורית שלך ---
+        // --- כאן מדביקים את הלוגיקה של האפליקציה שלך ---
         function App() {
             const [currentView, setCurrentView] = useState('dashboard');
             
+            // יצירת האייקונים בזמן אמת
             useEffect(() => {
                 if (window.lucide) window.lucide.createIcons();
             }, [currentView]);
 
             return (
-                <div className="flex flex-col min-h-screen max-w-md mx-auto bg-slate-950 pb-24 animate-in">
+                <div className="min-h-screen bg-slate-950 text-white font-sans overflow-x-hidden pb-24">
                     {/* Header */}
-                    <header className="p-6 pt-10 flex justify-between items-center">
+                    <div className="p-6 pt-10 flex justify-between items-center">
                         <div>
-                            <h1 className="text-2xl font-black text-white tracking-tighter">היי אריאל 👋</h1>
-                            <p className="text-slate-500 text-sm">מוכן לאימון היום?</p>
+                            <h1 className="text-2xl font-black tracking-tighter">היי אריאל 👋</h1>
+                            <p className="text-slate-500 text-sm">מוכן לאימון של היום?</p>
                         </div>
                         <div className="bg-slate-800 p-3 rounded-2xl border border-slate-700">
-                            <Icons.Dumbbell className="text-cyan-400 w-6 h-6" />
+                            <Dumbbell className="text-cyan-400" />
                         </div>
-                    </header>
+                    </div>
 
-                    {/* Dashboard Content */}
-                    <main className="flex-1 px-6 overflow-y-auto no-scrollbar">
-                        {currentView === 'dashboard' && (
-                            <div className="animate-up space-y-6">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="bg-slate-900/50 p-5 rounded-3xl border border-slate-800">
-                                        <Icons.Flame className="text-orange-500 mb-2 w-5 h-5" />
-                                        <div className="text-2xl font-bold">1,240</div>
-                                        <div className="text-slate-500 text-xs font-bold">קלוריות</div>
-                                    </div>
-                                    <div className="bg-slate-900/50 p-5 rounded-3xl border border-slate-800">
-                                        <Icons.BarChart2 className="text-cyan-500 mb-2 w-5 h-5" />
-                                        <div className="text-2xl font-bold">4</div>
-                                        <div className="text-slate-500 text-xs font-bold">אימונים</div>
-                                    </div>
+                    {/* Dashboard */}
+                    {currentView === 'dashboard' && (
+                        <div className="px-6 space-y-6 animate-in fade-in duration-500">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-slate-900/50 p-5 rounded-3xl border border-slate-800">
+                                    <Flame className="text-orange-500 mb-2" />
+                                    <div className="text-2xl font-bold">1,240</div>
+                                    <div className="text-slate-500 text-xs">קלוריות</div>
                                 </div>
-
-                                <h3 className="text-lg font-black text-right text-slate-300">בחר תוכנית אימון</h3>
-                                <div className="space-y-4">
-                                    {['A', 'B', 'C'].map((type) => (
-                                        <button key={type} className="w-full bg-slate-900 p-5 rounded-2xl border border-slate-800 flex justify-between items-center hover:border-cyan-500 transition-all">
-                                            <div className="bg-slate-800 p-2 rounded-xl text-cyan-400">
-                                                <Icons.Play className="w-5 h-5" />
-                                            </div>
-                                            <div className="text-right">
-                                                <div className="font-black text-white text-lg">אימון {type}</div>
-                                                <div className="text-slate-500 text-xs">גב, כתפיים ויד אחורית</div>
-                                            </div>
-                                        </button>
-                                    ))}
+                                <div className="bg-slate-900/50 p-5 rounded-3xl border border-slate-800">
+                                    <BarChart2 className="text-cyan-500 mb-2" />
+                                    <div className="text-2xl font-bold">4</div>
+                                    <div className="text-slate-500 text-xs">אימונים</div>
                                 </div>
                             </div>
-                        )}
 
-                        {currentView === 'history' && <div className="text-center py-20 text-slate-500">היסטוריית אימונים (טוען מ-Firebase...)</div>}
-                        {currentView === 'journal' && <div className="text-center py-20 text-slate-500 font-bold">יומן אימונים אישי</div>}
-                    </main>
+                            <h3 className="text-lg font-bold text-right">התוכנית שלי</h3>
+                            <div className="space-y-4">
+                                {['A', 'B', 'C'].map((type) => (
+                                    <button key={type} className="w-full bg-slate-900 p-5 rounded-2xl border border-slate-800 flex justify-between items-center">
+                                        <div className="bg-slate-800 p-2 rounded-xl text-cyan-400"><Play size={20} /></div>
+                                        <div className="text-right">
+                                            <div className="font-bold text-lg">אימון {type}</div>
+                                            <div className="text-slate-500 text-xs text-right">גב, כתפיים ויד אחורית</div>
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
-                    {/* המבנה המדויק של ה-Navbar המקורי שלך */}
-                    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto px-6 py-4 bg-slate-900/80 backdrop-blur-xl border-t border-white/5 rounded-t-[32px]">
-                        <div className="flex justify-between items-center px-4">
-                            <button onClick={() => setCurrentView('history')} className={`flex flex-col items-center gap-1 ${currentView === 'history' ? 'text-cyan-400' : 'text-slate-600'}`}>
-                                <Icons.History className="w-7 h-7" />
-                                <span className="text-[10px] font-black uppercase">היסטוריה</span>
+                    {/* History */}
+                    {currentView === 'history' && (
+                        <div className="px-6 animate-in slide-in-from-bottom-4 duration-500">
+                            <h2 className="text-xl font-bold text-right mb-6">היסטוריית אימונים</h2>
+                            <div className="bg-slate-900 p-4 rounded-2xl border border-slate-800 text-center text-slate-500">
+                                טוען נתונים מהענן...
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Journal */}
+                    {currentView === 'journal' && (
+                        <div className="px-6 animate-in slide-in-from-bottom-4 duration-500">
+                            <h2 className="text-xl font-bold text-right mb-6">יומן אימונים</h2>
+                            <div className="bg-slate-900 p-8 rounded-3xl border border-slate-800 text-center">
+                                <CalendarDays className="mx-auto mb-4 text-slate-700" size={48} />
+                                <p className="text-slate-400">כאן תוכל לתכנן את לוח הזמנים שלך</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Navbar - המבנה שאתה אוהב */}
+                    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto p-4 bg-slate-900/80 backdrop-blur-xl border-t border-slate-800 rounded-t-[32px]">
+                        <div className="flex justify-around items-center">
+                            <button onClick={() => setCurrentView('history')} className={`flex flex-col items-center ${currentView === 'history' ? 'text-cyan-400' : 'text-slate-500'}`}>
+                                <History size={28} />
+                                <span className="text-[10px] mt-1 font-bold">היסטוריה</span>
                             </button>
-                            
-                            <button onClick={() => setCurrentView('dashboard')} className="relative -top-10 bg-cyan-500 p-4 rounded-2xl rotate-45 shadow-lg shadow-cyan-500/40 border-2 border-white/20">
-                                <div className="-rotate-45">
-                                    <Icons.LayoutDashboard className="text-slate-950 w-8 h-8" />
-                                </div>
+                            <button onClick={() => setCurrentView('dashboard')} className="p-4 bg-cyan-500 rounded-2xl shadow-lg -mt-12 rotate-45 border-4 border-slate-950">
+                                <div className="-rotate-45"><LayoutDashboard className="text-slate-950" size={28} /></div>
                             </button>
-
-                            <button onClick={() => setCurrentView('journal')} className={`flex flex-col items-center gap-1 ${currentView === 'journal' ? 'text-cyan-400' : 'text-slate-600'}`}>
-                                <Icons.CalendarDays className="w-7 h-7" />
-                                <span className="text-[10px] font-black uppercase">יומן</span>
+                            <button onClick={() => setCurrentView('journal')} className={`flex flex-col items-center ${currentView === 'journal' ? 'text-cyan-400' : 'text-slate-500'}`}>
+                                <CalendarDays size={28} />
+                                <span className="text-[10px] mt-1 font-bold">יומן</span>
                             </button>
                         </div>
                     </nav>
