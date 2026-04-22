@@ -3,128 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fitness App</title>
+    <title>Fitness App Pro</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { margin: 0; padding: 0; background-color: #0f172a; color: white; font-family: system-ui, -apple-system, sans-serif; overflow-x: hidden; }
+        body { margin: 0; background-color: #020617; color: white; font-family: system-ui, -apple-system, sans-serif; }
+        .tab-active { color: #22d3ee; border-top: 2px solid #22d3ee; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-        .animate-in { animation: fade-in 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .animate-up { animation: slideUp 0.4s ease-out; }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef, useMemo } = React;
-        
-        // כאן מוזרק הקוד המלא של האפליקציה שלך
-        // הערה: הסרתי את ה-Imports כי הם נטענים מה-Scripts למעלה
-        
-        const WORKOUT_DATA = { 
-            A: { 
-                title: "גב, כתף אמצעית וקדמית, יד אחורית ובטן", 
-                exercises: [
-                    { id: 'a1', name: "פולי עליון באחיזה רחבה (מוט רחב)", setsCount: 4, reps: [12, 12, 10, 10], type: 'classic', video: "https://www.youtube.com/embed/Cawf7n6luuc" },
-                    { id: 'a2', name: "משיכת פולי עליון משולש", setsCount: 4, reps: [12, 10, 8, 8], type: 'classic', video: "https://www.youtube.com/embed/lueejjTuPQ" },
-                    { id: 'a3', name: "חתירה בישיבה (מוט משולש)", setsCount: 3, reps: [8, 8, 8], type: 'classic', video: "https://www.youtube.com/embed/GZbZ033f74" },
-                    { id: 'a4', name: "פולי אחורי מולחי עליון", setsCount: 3, reps: [12, 12, 12], type: 'classic', video: "https://www.youtube.com/embed/Ybx7Wd8jQ-Q" },
-                    { id: 'a5', name: "הרחקת כתפיים בעמידה (משקולות)", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/3VcKaxpzqRo" },
-                    { id: 'a6', name: "לחיצת כתפיים בישיבה (משקולות)", setsCount: 3, reps: [12, 10, 8], tempo: "4 שניות בירידה", type: 'classic', video: "https://www.youtube.com/embed/FW40C6uW9a4" },
-                    { id: 'a7', name: "כתף קדמית עם חבל מפולי תחתון", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/qEwKCR5CJog" },
-                    { id: 'a8', name: "יד אחורית פשיטת מרפק במוט", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/hRJ6EBK59z0" },
-                    { id: 'a9', name: "יד אחורית משקולת מאחורי הראש", setsCount: 3, reps: [12, 10, 10], tempo: "4 שניות בירידה", type: 'classic', video: "https://www.youtube.com/embed/2-LAMcpzHLU" },
-                    { id: 'a10', name: "פלאנק", type: 'classic', video: "https://www.youtube.com/embed/Ybx7Wd8jQ-Q" },
-                    { id: 'a11', name: "כפיפות בטן רגליים עולות ויורדות", setsCount: 4, reps: [25, 25, 25, 25], type: 'classic', video: "https://www.youtube.com/embed/X0T2S4A-ZfE" }
-                ] 
-            },
-            B: { 
-                title: "חזה, יד קדמית, כתף אחורית ובטן", 
-                exercises: [
-                    { id: 'b1', name: "קירוב ירכייים בישיבה במכשיר", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/Y0r35V6Q800" },
-                    { id: 'b2', name: "הרחקת ירכיים בישיבה במכשיר", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/0G2V_yI_Y88" },
-                    { id: 'b3', name: "לאנג'ים רגיל", setsCount: 4, reps: [12, 12, 10, 10], tempo: "3 שניות בירידה", type: 'classic', video: "https://www.youtube.com/embed/COKYKgQ8KR0" },
-                    { id: 'b4', name: "סקוואטים", setsCount: 4, reps: [10, 10, 10, 8], type: 'classic', video: "https://www.youtube.com/embed/MVMnk0HitMg" },
-                    { id: 'b5', name: "פשיטת ברכיים במכשיר", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/m0OIB6nctX4" },
-                    { id: 'b6', name: "כפיפת ברכיים במכשיר", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/1Tq3Qd1nwRo" },
-                    { id: 'b7', name: "לחיצת רגליים במכשיר", setsCount: 3, reps: [12, 10, 10], tempo: "4 שניות בירידה", type: 'classic', video: "https://www.youtube.com/embed/GvmMT0Vp4vM" },
-                    { id: 'b8', name: "תאומים בעמידה במכונת סמית", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/fA_K1079FqI" }
-                ] 
-            },
-            C: { 
-                title: "רגליים ובטן", 
-                exercises: [
-                    { id: 'c1', name: "לחיצת חזה משקולות (חופשי)", setsCount: 4, reps: [12, 12, 10, 10], type: 'classic', video: "https://www.youtube.com/embed/8iPEnn-ltC8" },
-                    { id: 'c2', name: "לחיצת חזה במכונה", setsCount: 3, reps: [10, 10, 10], tempo: "3 שניות בירידה", type: 'classic', video: "https://www.youtube.com/embed/xh8S9pMzePE" },
-                    { id: 'c3', name: "לחיצת חזה עליון במכונה", setsCount: 3, reps: [10, 10, 8], type: 'classic', video: "https://www.youtube.com/embed/SrQou55lr6A" },
-                    { id: 'c4', name: "פרפר פולי תחתון", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/Z57CtW401I0" },
-                    { id: 'c5', name: "יד קדמית משקולות (2 ידיים יחד)", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/ykJmrZ5v0oo" },
-                    { id: 'c6', name: "יד קדמית פטישים", setsCount: 3, reps: [12, 10, 8], tempo: "3 שניות בירידה", type: 'classic', video: "https://www.youtube.com/embed/LY1V69PCH6M" },
-                    { id: 'c7', name: "כתף אחורית פייס פול", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/reb-qvOKqgk" },
-                    { id: 'c8', name: "כתף אחורית במכונה", setsCount: 4, reps: [12, 10, 10, 8], type: 'classic', video: "https://www.youtube.com/embed/79U3o0_Z4mY" },
-                    { id: 'c9', name: "כפיפות בטן בשיפוע שלילי", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/X0T2S4A-ZfE" }
-                ] 
-            }
-        };
+        const { useState, useEffect } = React;
 
-        // רכיבי עזר (Icon stubs for lucide-react if not loaded)
-        const Icon = ({ name }) => <span style={{fontSize: '24px'}}>🏋️</span>;
+        // רכיב אייקון פשוט כי אנחנו טוענים lucide חיצונית
+        const LucideIcon = ({ name, size = 24, className = "" }) => {
+            useEffect(() => { lucide.createIcons(); }, [name]);
+            return <i data-lucide={name} style={{ width: size, height: size }} className={className}></i>;
+        };
 
         function App() {
             const [currentView, setCurrentView] = useState('dashboard');
-            const [activeWorkout, setActiveWorkout] = useState(null);
+            const [history, setHistory] = useState([
+                { date: '22/04/2026', type: 'אימון A', duration: '55 דק\'' },
+                { date: '20/04/2026', type: 'אימון B', duration: '62 דק\'' }
+            ]);
 
             return (
-                <div className="min-h-screen p-4 flex flex-col items-center">
-                    <header className="w-full max-w-md mb-8 text-center">
-                        <h1 className="text-3xl font-black text-cyan-400">FITNESS TRACKER</h1>
-                        <p className="text-slate-400">מוכן לאימון של היום?</p>
+                <div className="flex flex-col min-h-screen max-w-md mx-auto bg-slate-950 pb-24">
+                    {/* Header */}
+                    <header className="p-6 pt-10 flex justify-between items-center">
+                        <div>
+                            <h1 className="text-2xl font-black tracking-tighter text-white">היי אריאל 👋</h1>
+                            <p className="text-slate-500 text-sm">מוכן לשבור שיאים היום?</p>
+                        </div>
+                        <div className="bg-slate-800 p-2 rounded-full border border-slate-700">
+                            <LucideIcon name="dumbbell" className="text-cyan-400" />
+                        </div>
                     </header>
 
-                    {currentView === 'dashboard' && (
-                        <div className="w-full max-w-md space-y-4 animate-in">
-                            {Object.entries(WORKOUT_DATA).map(([key, workout]) => (
-                                <button 
-                                    key={key}
-                                    onClick={() => { setActiveWorkout(workout); setCurrentView('workout'); }}
-                                    className="w-full bg-slate-800 p-6 rounded-2xl border border-slate-700 hover:border-cyan-500 transition-all text-right"
-                                >
-                                    <div className="text-cyan-500 font-bold text-xl mb-1">אימון {key}</div>
-                                    <div className="text-white font-medium">{workout.title}</div>
-                                </button>
-                            ))}
-                        </div>
-                    )}
+                    {/* Main Content */}
+                    <main className="flex-1 px-6 overflow-y-auto no-scrollbar">
+                        
+                        {currentView === 'dashboard' && (
+                            <div className="animate-up space-y-6">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="bg-slate-900 p-4 rounded-3xl border border-slate-800">
+                                        <LucideIcon name="flame" className="text-orange-500 mb-2" />
+                                        <div className="text-2xl font-bold">1,240</div>
+                                        <div className="text-slate-500 text-xs">קלוריות השבוע</div>
+                                    </div>
+                                    <div className="bg-slate-900 p-4 rounded-3xl border border-slate-800">
+                                        <LucideIcon name="timer" className="text-cyan-500 mb-2" />
+                                        <div className="text-2xl font-bold">4</div>
+                                        <div className="text-slate-500 text-xs">אימונים החודש</div>
+                                    </div>
+                                </div>
 
-                    {currentView === 'workout' && activeWorkout && (
-                        <div className="w-full max-w-md animate-in">
-                            <button onClick={() => setCurrentView('dashboard')} className="mb-4 text-cyan-400 flex items-center gap-2"> חזור לתפריט</button>
-                            <h2 className="text-2xl font-bold mb-6 text-right">{activeWorkout.title}</h2>
-                            <div className="space-y-4">
-                                {activeWorkout.exercises.map((ex) => (
-                                    <div key={ex.id} className="bg-slate-800 p-4 rounded-xl border border-slate-700 text-right">
-                                        <div className="font-bold text-lg mb-2">{ex.name}</div>
-                                        <div className="text-slate-400 text-sm mb-4">
-                                            {ex.type === 'classic' ? `סטים: ${ex.setsCount} | חזרות: ${ex.reps.join(', ')}` : `סטים: ${ex.setsCount} | סטטו-דינמי`}
-                                        </div>
-                                        <div className="aspect-video w-full rounded-lg overflow-hidden bg-black">
-                                            <iframe 
-                                                className="w-full h-full"
-                                                src={ex.video} 
-                                                title={ex.name}
-                                                frameBorder="0" 
-                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                                allowFullScreen
-                                            ></iframe>
+                                <h3 className="text-lg font-bold text-right">בחר אימון</h3>
+                                <div className="space-y-3">
+                                    {['A', 'B', 'C'].map((type) => (
+                                        <button key={type} className="w-full bg-gradient-to-l from-slate-800 to-slate-900 p-5 rounded-2xl border border-slate-800 flex justify-between items-center hover:border-cyan-500 transition-all">
+                                            <LucideIcon name="play-circle" className="text-cyan-400" />
+                                            <div className="text-right">
+                                                <div className="font-bold">אימון {type}</div>
+                                                <div className="text-slate-400 text-xs">גב, כתפיים ויד אחורית</div>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {currentView === 'history' && (
+                            <div className="animate-up space-y-4">
+                                <h3 className="text-xl font-bold text-right mb-4">היסטוריית אימונים</h3>
+                                {history.map((item, index) => (
+                                    <div key={index} className="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex justify-between items-center">
+                                        <div className="text-cyan-400 font-medium">{item.duration}</div>
+                                        <div className="text-right">
+                                            <div className="font-bold">{item.type}</div>
+                                            <div className="text-slate-500 text-xs">{item.date}</div>
                                         </div>
                                     </div>
                                 ))}
                             </div>
-                        </div>
-                    )}
+                        )}
+
+                        {currentView === 'journal' && (
+                            <div className="animate-up text-center py-20">
+                                <LucideIcon name="calendar-days" size={48} className="mx-auto text-slate-700 mb-4" />
+                                <h3 className="text-xl font-bold">יומן אימונים</h3>
+                                <p className="text-slate-500 mt-2 text-sm px-10">כאן תוכל לתזמן את האימונים הבאים שלך ולראות רצף ביצועים.</p>
+                                <button className="mt-6 bg-cyan-500 text-slate-950 px-6 py-2 rounded-full font-bold">הוסף יעד חדש</button>
+                            </div>
+                        )}
+                    </main>
+
+                    {/* Navigation Bar */}
+                    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-slate-900/80 backdrop-blur-xl border-t border-slate-800 px-8 py-4 flex justify-between items-center rounded-t-3xl">
+                        <button onClick={() => setCurrentView('history')} className={`flex flex-col items-center gap-1 ${currentView === 'history' ? 'text-cyan-400' : 'text-slate-500'}`}>
+                            <LucideIcon name="history" />
+                            <span className="text-[10px] font-bold">היסטוריה</span>
+                        </button>
+                        
+                        <button onClick={() => setCurrentView('dashboard')} className="relative -top-8 bg-cyan-500 p-4 rounded-2xl shadow-xl shadow-cyan-500/20 rotate-45 border-4 border-slate-950">
+                            <div className="-rotate-45">
+                                <LucideIcon name="layout-dashboard" className="text-slate-950" />
+                            </div>
+                        </button>
+
+                        <button onClick={() => setCurrentView('journal')} className={`flex flex-col items-center gap-1 ${currentView === 'journal' ? 'text-cyan-400' : 'text-slate-500'}`}>
+                            <LucideIcon name="calendar-days" />
+                            <span className="text-[10px] font-bold">יומן</span>
+                        </button>
+                    </nav>
                 </div>
             );
         }
@@ -132,3 +132,5 @@
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
+</body>
+</html>
