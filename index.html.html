@@ -1,111 +1,134 @@
-... (כל ה-Head של ה-HTML)
-<script type="text/babel">
-    const { useState, useEffect, useRef, useMemo } = React;
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitness App</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { margin: 0; padding: 0; background-color: #0f172a; color: white; font-family: system-ui, -apple-system, sans-serif; overflow-x: hidden; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+        .animate-in { animation: fade-in 0.3s ease-out; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
 
-   import React, { useState, useEffect, useRef, useMemo } from 'react'; import { Dumbbell, Flame, BarChart2, Clock, CheckCircle2, RotateCcw, Heart, Plus, History, Check, Timer as TimerIcon, X, TrendingUp, TrendingDown, ChevronLeft, ChevronRight, AlertCircle, Play, Youtube, Zap, Send, CalendarDays, LayoutDashboard, Trash2, Pencil, RefreshCcw } from 'lucide-react'; import { initializeApp } from 'firebase/app'; import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth'; import { getFirestore, collection, addDoc, setDoc, doc, deleteDoc, onSnapshot, query, serverTimestamp, orderBy } from 'firebase/firestore'; // --- CONFIGURATION --- const firebaseConfig = JSON.parse(__firebase_config); const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app); const appId = typeof __app_id !== 'undefined' ? __app_id : 'ariel-davidoff-training'; const monthNamesHebrew = [ "ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני", "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר" ]; const WORKOUT_DATA = { A: { title: "גב, כתף אמצעית וקדמית, יד אחורית ובטן", exercises: [ { id: 'a1', name: "משיכת פולי עליון בישיבה (מוט רחב)", setsCount: 4, reps: [12, 12, 10, 10], type: 'classic', video: "https://www.youtube.com/embed/CAwf7n6Luuc" }, { id: 'a2', name: "משיכת פולי עליון משולש", setsCount: 4, reps: [12, 10, 8, 8], type: 'classic', video: "https://www.youtube.com/embed/lueEJGjTuPQ" }, { id: 'a3', name: "חתירה בישיבה (מוט משולש)", setsCount: 3, reps: [8, 8, 8], type: 'classic', video: "https://www.youtube.com/embed/GZbfZ033f74" }, { id: 'a4', name: "פול אוובר מפולי עליון", setsCount: 3, reps: [12, 12, 12], type: 'classic', video: "https://www.youtube.com/embed/fW40C6uW9a4" }, { id: 'a5', name: "הרחקת כתפיים בעמידה (משקולות)", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/3VcKaXpzqRo" }, { id: 'a6', name: "לחיצת כתפיים בישיבה (משקולות)", setsCount: 3, reps: [12, 10, 8], tempo: "4 שניות בירידה", type: 'classic', video: "https://www.youtube.com/embed/qEwKCR5JCog" }, { id: 'a7', name: "כתף קדמית עם חבל מפולי תחתון", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/hRJ6EBK59z0" }, { id: 'a8', name: "יד אחורית פשיטת מרפק במוט", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/2-LAMcpzHLU" }, { id: 'a9', name: "יד אחורית משקולת מאחורי הראש", setsCount: 3, reps: [12, 10, 10], tempo: "4 שניות בירידה", type: 'classic', video: "https://www.youtube.com/embed/YbX7Wd8jQ-Q" }, { id: 'a10', name: "כפיפות בטן במכונה", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/X0T2S4A-ZfE" }, { id: 'a11', name: "כפיפות בטן רגליים עולות ויורדות", setsCount: 4, reps: [25, 25, 25, 25], type: 'classic', video: "https://www.youtube.com/embed/JB2oyawG9KI" }, ] }, B: { title: "רגליים", exercises: [ { id: 'b1', name: "קירוב יריכיים בישיבה במכשיר", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/Y0r35V6Q800" }, { id: 'b2', name: "הרחקת יריכיים בישיבה במכשיר", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/0G2V_yI_Y88" }, { id: 'b3', name: "לאנצ'ים רגיל", setsCount: 4, reps: [12, 12, 10, 10], tempo: "3 שניות בירידה", type: 'classic', video: "https://www.youtube.com/embed/COKYKgQ8KR0" }, { id: 'b4', name: "סקוואטים", setsCount: 4, reps: [10, 10, 10, 8], type: 'classic', video: "https://www.youtube.com/embed/MVMnk0HiTMg" }, { id: 'b5', name: "פשיטת ברכיים בישיבה", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/m0OIB6nctX4" }, { id: 'b6', name: "כפיפת ברכיים בשכיבה", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/1Tq3Qd1nwRo" }, { id: 'b7', name: "לחיצת רגליים במכשיר", setsCount: 3, reps: [12, 10, 10], tempo: "4 שניות בירידה", type: 'classic', video: "https://www.youtube.com/embed/GvNmT0Vp4vM" }, { id: 'b8', name: "תאומים בעמידה בסמיט משין", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/fA_K1079FqI" }, ] }, C: { title: "חזה, יד קדמית, כתף אחורית ובטן", exercises: [ { id: 'c1', name: "לחיצת חזה עליון (משקולות חופשיות)", setsCount: 4, reps: [12, 12, 10, 10], type: 'classic', video: "https://www.youtube.com/embed/8iPEnn-ltC8" }, { id: 'c2', name: "לחיצת חזה במכונה", setsCount: 3, reps: [10, 10, 10], tempo: "3 שניות בירידה", type: 'classic', video: "https://www.youtube.com/embed/xh8S9p9mZpE" }, { id: 'c3', name: "לחיצת חזה עליון (מוט)", setsCount: 3, reps: [10, 10, 8], type: 'classic', video: "https://www.youtube.com/embed/SrqOu55lr6A" }, { id: 'c4', name: "פרפר במכונה", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/Z57CtW401I0" }, { id: 'c5', name: "יד קדמית דאמבלס (2 ידיים יחד)", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/ykJmrZ5v0Oo" }, { id: 'c6', name: "יד קדמית מוט W", setsCount: 3, reps: [12, 10, 8], tempo: "3 שניות בירידה", type: 'classic', video: "https://www.youtube.com/embed/LY1V69PCH6M" }, { id: 'c7', name: "כתף אחורית פייס פול", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/rep-qVOkqgk" }, { id: 'c8', name: "כתף אחורית במכונה", setsCount: 4, reps: [12, 10, 10, 8], type: 'classic', video: "https://www.youtube.com/embed/79U3o0_Z4mY" }, { id: 'c9', name: "כפיפות בטן בשיפוע שלילי", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/X0Y7O9pM9Vw" }, ] } }; // --- SUB-COMPONENTS --- const GlobalRestTimer = ({ isOpen, onClose, initialSeconds = 60 }) => { const [timeLeft, setTimeLeft] = useState(initialSeconds); useEffect(() => { if (!isOpen) return; setTimeLeft(initialSeconds); const interval = setInterval(() => { setTimeLeft((prev) => (prev <= 1 ? 0 : prev - 1)); }, 1000); return () => clearInterval(interval); }, [isOpen, initialSeconds]); if (!isOpen) return null; return (
-מנוחה {timeLeft}s
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo } = React;
+        
+        // כאן מוזרק הקוד המלא של האפליקציה שלך
+        // הערה: הסרתי את ה-Imports כי הם נטענים מה-Scripts למעלה
+        
+        const WORKOUT_DATA = { 
+            A: { 
+                title: "גב, כתף אמצעית וקדמית, יד אחורית ובטן", 
+                exercises: [
+                    { id: 'a1', name: "פולי עליון באחיזה רחבה (מוט רחב)", setsCount: 4, reps: [12, 12, 10, 10], type: 'classic', video: "https://www.youtube.com/embed/Cawf7n6luuc" },
+                    { id: 'a2', name: "משיכת פולי עליון משולש", setsCount: 4, reps: [12, 10, 8, 8], type: 'classic', video: "https://www.youtube.com/embed/lueejjTuPQ" },
+                    { id: 'a3', name: "חתירה בישיבה (מוט משולש)", setsCount: 3, reps: [8, 8, 8], type: 'classic', video: "https://www.youtube.com/embed/GZbZ033f74" },
+                    { id: 'a4', name: "פולי אחורי מולחי עליון", setsCount: 3, reps: [12, 12, 12], type: 'classic', video: "https://www.youtube.com/embed/Ybx7Wd8jQ-Q" },
+                    { id: 'a5', name: "הרחקת כתפיים בעמידה (משקולות)", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/3VcKaxpzqRo" },
+                    { id: 'a6', name: "לחיצת כתפיים בישיבה (משקולות)", setsCount: 3, reps: [12, 10, 8], tempo: "4 שניות בירידה", type: 'classic', video: "https://www.youtube.com/embed/FW40C6uW9a4" },
+                    { id: 'a7', name: "כתף קדמית עם חבל מפולי תחתון", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/qEwKCR5CJog" },
+                    { id: 'a8', name: "יד אחורית פשיטת מרפק במוט", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/hRJ6EBK59z0" },
+                    { id: 'a9', name: "יד אחורית משקולת מאחורי הראש", setsCount: 3, reps: [12, 10, 10], tempo: "4 שניות בירידה", type: 'classic', video: "https://www.youtube.com/embed/2-LAMcpzHLU" },
+                    { id: 'a10', name: "פלאנק", type: 'classic', video: "https://www.youtube.com/embed/Ybx7Wd8jQ-Q" },
+                    { id: 'a11', name: "כפיפות בטן רגליים עולות ויורדות", setsCount: 4, reps: [25, 25, 25, 25], type: 'classic', video: "https://www.youtube.com/embed/X0T2S4A-ZfE" }
+                ] 
+            },
+            B: { 
+                title: "חזה, יד קדמית, כתף אחורית ובטן", 
+                exercises: [
+                    { id: 'b1', name: "קירוב ירכייים בישיבה במכשיר", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/Y0r35V6Q800" },
+                    { id: 'b2', name: "הרחקת ירכיים בישיבה במכשיר", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/0G2V_yI_Y88" },
+                    { id: 'b3', name: "לאנג'ים רגיל", setsCount: 4, reps: [12, 12, 10, 10], tempo: "3 שניות בירידה", type: 'classic', video: "https://www.youtube.com/embed/COKYKgQ8KR0" },
+                    { id: 'b4', name: "סקוואטים", setsCount: 4, reps: [10, 10, 10, 8], type: 'classic', video: "https://www.youtube.com/embed/MVMnk0HitMg" },
+                    { id: 'b5', name: "פשיטת ברכיים במכשיר", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/m0OIB6nctX4" },
+                    { id: 'b6', name: "כפיפת ברכיים במכשיר", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/1Tq3Qd1nwRo" },
+                    { id: 'b7', name: "לחיצת רגליים במכשיר", setsCount: 3, reps: [12, 10, 10], tempo: "4 שניות בירידה", type: 'classic', video: "https://www.youtube.com/embed/GvmMT0Vp4vM" },
+                    { id: 'b8', name: "תאומים בעמידה במכונת סמית", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/fA_K1079FqI" }
+                ] 
+            },
+            C: { 
+                title: "רגליים ובטן", 
+                exercises: [
+                    { id: 'c1', name: "לחיצת חזה משקולות (חופשי)", setsCount: 4, reps: [12, 12, 10, 10], type: 'classic', video: "https://www.youtube.com/embed/8iPEnn-ltC8" },
+                    { id: 'c2', name: "לחיצת חזה במכונה", setsCount: 3, reps: [10, 10, 10], tempo: "3 שניות בירידה", type: 'classic', video: "https://www.youtube.com/embed/xh8S9pMzePE" },
+                    { id: 'c3', name: "לחיצת חזה עליון במכונה", setsCount: 3, reps: [10, 10, 8], type: 'classic', video: "https://www.youtube.com/embed/SrQou55lr6A" },
+                    { id: 'c4', name: "פרפר פולי תחתון", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/Z57CtW401I0" },
+                    { id: 'c5', name: "יד קדמית משקולות (2 ידיים יחד)", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/ykJmrZ5v0oo" },
+                    { id: 'c6', name: "יד קדמית פטישים", setsCount: 3, reps: [12, 10, 8], tempo: "3 שניות בירידה", type: 'classic', video: "https://www.youtube.com/embed/LY1V69PCH6M" },
+                    { id: 'c7', name: "כתף אחורית פייס פול", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/reb-qvOKqgk" },
+                    { id: 'c8', name: "כתף אחורית במכונה", setsCount: 4, reps: [12, 10, 10, 8], type: 'classic', video: "https://www.youtube.com/embed/79U3o0_Z4mY" },
+                    { id: 'c9', name: "כפיפות בטן בשיפוע שלילי", setsCount: 5, type: 'stato-dynamic', video: "https://www.youtube.com/embed/X0T2S4A-ZfE" }
+                ] 
+            }
+        };
 
-); }; const StatoDynamicTimer = ({ onFinishExercise, isDone, onMarkDone }) => { const [currentSet, setCurrentSet] = useState(1); const [phase, setPhase] = useState('work'); const [timeLeft, setTimeLeft] = useState(30); const [isActive, setIsActive] = useState(false); useEffect(() => { let interval = null; if (isActive && timeLeft > 0) { interval = setInterval(() => setTimeLeft(prev => prev - 1), 1000); } else if (isActive && timeLeft === 0) { if (phase === 'work') { setPhase('rest'); setTimeLeft(30); } else { if (currentSet < 5) { setCurrentSet(prev => prev + 1); setPhase('work'); setTimeLeft(30); } else { setIsActive(false); onFinishExercise(); } } } return () => clearInterval(interval); }, [isActive, timeLeft, phase, currentSet, onFinishExercise]); return (
-{isDone &&
-}
-סטטו-דינאמי: סט {currentSet}/5
-{timeLeft}s
-{phase === 'work' ? 'עבודה רציפה' : 'מנוחה מלאה'}
-setIsActive(!isActive)} className={`flex-1 py-5 rounded-3xl font-black text-xl transition-all ${isActive ? 'bg-slate-700 text-slate-300' : 'bg-lime-500 text-slate-900 shadow-[0_0_30px_rgba(132,204,22,0.3)]'}`}> {isActive ? 'השהה' : 'התחל'} { setTimeLeft(30); setCurrentSet(1); setPhase('work'); setIsActive(false); }} className="p-5 bg-slate-700 rounded-3xl hover:bg-slate-600 transition-colors">
-{isDone ? 'התרגיל הושלם!' : 'סימון כהושלם'}
-); }; // --- APP COMPONENT --- export default function App() { const [user, setUser] = useState(null); const [currentView, setCurrentView] = useState('dashboard'); const [journalMode, setJournalMode] = useState('week'); const [activeWorkout, setActiveWorkout] = useState(null); const [logs, setLogs] = useState([]); const [plans, setPlans] = useState({}); const [cardioMinutes, setCardioMinutes] = useState(0); const [isResting, setIsResting] = useState(false); const [completedExercisesIds, setCompletedExercisesIds] = useState([]); const [localWeights, setLocalWeights] = useState({}); const [localReps, setLocalReps] = useState({}); const [repsEditMode, setRepsEditMode] = useState({}); const [sessionCompletedSets, setSessionCompletedSets] = useState({}); const [focusedExId, setFocusedExId] = useState(null); const [cardioInput, setCardioInput] = useState(''); const [selectedPlanDate, setSelectedPlanDate] = useState(null); const [viewDate, setViewDate] = useState(new Date()); const [fixedPrevWeights, setFixedPrevWeights] = useState({}); const [resetToggle, setResetToggle] = useState(false); // --- ACTIONS & LOGIC --- const findPreviousWeight = (exId, setIdx) => { if (resetToggle) return null; const history = logs.filter(l => l.exerciseId === exId && l.setIndex === setIdx && l.type === 'strength'); return history.length > 0 ? history[0].weight : null; }; const markExerciseDone = async (exerciseId) => { if (!completedExercisesIds.includes(exerciseId)) { setCompletedExercisesIds(prev => [...prev, exerciseId]); const exercise = activeWorkout?.exercises.find(e => e.id === exerciseId); if (exercise && user) { await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'logs'), { workoutId: activeWorkout.id, exerciseId: exercise.id, timestamp: serverTimestamp(), type: 'strength', completed: true, status: exercise.type === 'stato-dynamic' ? 'stato-dynamic-finished' : 'sets-finished' }); } } }; const saveSet = async (exId, setIdx) => { const setKey = `${exId}_${setIdx}`; const weight = localWeights[setKey]; const exercise = activeWorkout?.exercises.find(e => e.id === exId); const reps = localReps[setKey] || (exercise?.reps?.[setIdx] || 10); if (!user || !weight) return; setSessionCompletedSets(prev => ({ ...prev, [setKey]: true })); setIsResting(true); try { await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'logs'), { workoutId: activeWorkout.id, exerciseId: exId, setIndex: setIdx, weight: parseFloat(weight), reps: parseInt(reps), timestamp: serverTimestamp(), type: 'strength' }); } catch (e) { setSessionCompletedSets(prev => ({ ...prev, [setKey]: false })); } }; const startWorkout = (type) => { const workout = WORKOUT_DATA[type]; const prevSnap = {}; if (!resetToggle) { workout.exercises.forEach(ex => { for(let i=0; i { setResetToggle(true); setFixedPrevWeights({}); }; const setWorkoutPlan = async (dateStr, workoutId) => { if (!user) return; const planId = dateStr.replace(/\//g, '-'); const planRef = doc(db, 'artifacts', appId, 'users', user.uid, 'plans', planId); if (workoutId === null) { await deleteDoc(planRef); } else { await setDoc(planRef, { workoutId }); } setSelectedPlanDate(null); }; const scrollToExercise = (id) => { setFocusedExId(id); const element = document.getElementById(`ex-${id}`); if (element) { const offset = 120; const bodyRect = document.body.getBoundingClientRect().top; const elementRect = element.getBoundingClientRect().top; window.scrollTo({ top: elementRect - bodyRect - offset, behavior: 'smooth' }); } }; // Auto completion observer useEffect(() => { if (!activeWorkout) return; activeWorkout.exercises.forEach(exercise => { if (exercise.type === 'classic' && !completedExercisesIds.includes(exercise.id)) { let allSetsDone = true; for (let i = 0; i < exercise.setsCount; i++) { if (!sessionCompletedSets[`${exercise.id}_${i}`]) { allSetsDone = false; break; } } if (allSetsDone) markExerciseDone(exercise.id); } }); }, [sessionCompletedSets, activeWorkout, completedExercisesIds]); // Firebase sync useEffect(() => { const initAuth = async () => { if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) { await signInWithCustomToken(auth, __initial_auth_token); } else { await signInAnonymously(auth); } }; initAuth(); const unsubscribeAuth = onAuthStateChanged(auth, setUser); return () => unsubscribeAuth(); }, []); useEffect(() => { if (!user) return; const qLogs = query(collection(db, 'artifacts', appId, 'users', user.uid, 'logs'), orderBy('timestamp', 'desc')); const unsubLogs = onSnapshot(qLogs, (snapshot) => { const fetchedLogs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), dateStr: doc.data().timestamp?.toDate().toLocaleDateString() })); setLogs(fetchedLogs); const lastWeek = new Date(); lastWeek.setDate(lastWeek.getDate() - 7); const totalCardio = fetchedLogs.filter(l => l.type === 'cardio' && l.timestamp?.toDate() > lastWeek).reduce((acc, curr) => acc + (curr.minutes || 0), 0); setCardioMinutes(totalCardio); }); const qPlans = collection(db, 'artifacts', appId, 'users', user.uid, 'plans'); const unsubPlans = onSnapshot(qPlans, (snapshot) => { const fetchedPlans = {}; snapshot.docs.forEach(doc => { fetchedPlans[doc.id] = doc.data().workoutId; }); setPlans(fetchedPlans); }); return () => { unsubLogs(); unsubPlans(); }; }, [user]); const getLogBySession = useMemo(() => { const sessions = {}; logs.forEach(log => { if (!log.dateStr || !log.workoutId) return; const key = `${log.dateStr}_${log.workoutId}`; if (!sessions[key]) sessions[key] = { date: log.dateStr, workoutId: log.workoutId, logs: [] }; sessions[key].logs.push(log); }); return Object.values(sessions).sort((a,b) => { const dateA = new Date(a.date.split('.').reverse().join('-')); const dateB = new Date(b.date.split('.').reverse().join('-')); return dateB - dateA; }); }, [logs]); // --- RENDERS --- const renderDashboard = () => (
-בוא נתחיל, אריאל.
-היום זה יום מצוין לשבור שיאים.
+        // רכיבי עזר (Icon stubs for lucide-react if not loaded)
+        const Icon = ({ name }) => <span style={{fontSize: '24px'}}>🏋️</span>;
 
-אירובי שבועי
-יעד: 150 דק'
-{cardioMinutes}/ 150 דקות
-דקות
- setCardioInput(e.target.value)} /> { if(!user || !cardioInput) return; await addDoc(collection(db,'artifacts',appId,'users',user.uid,'logs'),{minutes:parseInt(cardioInput),timestamp:serverTimestamp(),type:'cardio'}); setCardioInput(''); }} className="p-2 bg-cyan-500 rounded-xl text-slate-950 active:scale-90 transition-transform">
-{Object.entries(WORKOUT_DATA).map(([type, data]) => (
-תוכנית אימון
-אימון {type}
-{data.title}
+        function App() {
+            const [currentView, setCurrentView] = useState('dashboard');
+            const [activeWorkout, setActiveWorkout] = useState(null);
 
-startWorkout(type)} className="w-14 h-14 bg-cyan-500 text-slate-950 rounded-2xl flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all text-right">
-))}
-); const renderJournal = () => { const today = new Date(); const sessionDates = getLogBySession.map(s => s.date); const dayNames = ['א\'', 'ב\'', 'ג\'', 'ד\'', 'ה\'', 'ו\'', 'ש\'']; const currentMonthName = monthNamesHebrew[viewDate.getMonth()]; const currentYear = viewDate.getFullYear(); const currentDayOfWeek = viewDate.getDay(); const weekDays = []; for (let i = 0; i < 7; i++) { const d = new Date(viewDate); d.setDate(viewDate.getDate() - currentDayOfWeek + i); weekDays.push({ date: d, dateStr: d.toLocaleDateString(), dayName: dayNames[i], isToday: d.toDateString() === today.toDateString() }); } return (
-יומן תכנון
-setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1))} className="text-slate-400 hover:text-cyan-400 transition-colors p-1">
-{currentMonthName} {currentYear}
-setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1))} className="text-slate-400 hover:text-cyan-400 transition-colors p-1">
-setJournalMode('week')} className={`px-6 py-2 rounded-xl text-xs font-black transition-all ${journalMode === 'week' ? 'bg-cyan-500 text-slate-950 shadow-lg' : 'text-slate-500 hover:text-white'}`}>שבועי setJournalMode('month')} className={`px-6 py-2 rounded-xl text-xs font-black transition-all ${journalMode === 'month' ? 'bg-cyan-500 text-slate-950 shadow-lg' : 'text-slate-500 hover:text-white'}`}>חודשי
-{journalMode === 'week' ? (
-{weekDays.map((day, idx) => { const dateKey = day.dateStr.replace(/\//g, '-'); const hasLog = sessionDates.includes(day.dateStr); const plannedWorkout = plans[dateKey]; const actualSession = getLogBySession.find(s => s.date === day.dateStr); return (
-{day.dayName}setSelectedPlanDate(day.dateStr)} className={`w-full aspect-square rounded-2xl flex flex-col items-center justify-center border-2 transition-all shadow-xl active:scale-95 ${day.isToday ? 'border-cyan-500 bg-slate-900 ring-4 ring-cyan-500/10' : hasLog ? 'border-lime-500/40 bg-lime-500/5' : plannedWorkout ? 'border-cyan-500/40 bg-cyan-500/5 border-dashed' : 'border-slate-800 bg-slate-900/50'}`}>{hasLog ? (<>{actualSession.workoutId}) : plannedWorkout ? (<>{plannedWorkout}) : ({day.date.getDate()})}
-); })}
-) : (
-{dayNames.map(d =>
-{d}
-)} {Array.from({ length: 31 }).map((_, idx) => { const dayNum = idx + 1; const d = new Date(viewDate.getFullYear(), viewDate.getMonth(), dayNum); const dateStr = d.toLocaleDateString(); const dateKey = dateStr.replace(/\//g, '-'); const hasLog = sessionDates.includes(dateStr); const plannedWorkout = plans[dateKey]; const session = getLogBySession.find(s => s.date === dateStr); if (d.getMonth() !== viewDate.getMonth()) return null; return (setSelectedPlanDate(dateStr)} className={`aspect-square rounded-xl flex flex-col items-center justify-center border transition-all active:scale-95 ${d.toDateString() === today.toDateString() ? 'border-cyan-500 bg-slate-900' : hasLog ? 'border-lime-500/30 bg-lime-500/10' : plannedWorkout ? 'border-cyan-500/30 bg-cyan-500/5 border-dashed' : 'border-transparent bg-slate-900/30'}`}>{hasLog ? ({session.workoutId}) : plannedWorkout ? ({plannedWorkout}) : ({dayNum})}{(hasLog || plannedWorkout) &&
-}
-); })}
-)}
-{selectedPlanDate && (
-תכנון אימון
-{selectedPlanDate}
+            return (
+                <div className="min-h-screen p-4 flex flex-col items-center">
+                    <header className="w-full max-w-md mb-8 text-center">
+                        <h1 className="text-3xl font-black text-cyan-400">FITNESS TRACKER</h1>
+                        <p className="text-slate-400">מוכן לאימון של היום?</p>
+                    </header>
 
-{['A', 'B', 'C'].map(id => (setWorkoutPlan(selectedPlanDate, id)} className={`py-4 rounded-2xl font-black text-lg transition-all border-2 ${plans[selectedPlanDate.replace(/\//g, '-')] === id ? 'bg-cyan-500 border-cyan-400 text-slate-950' : 'bg-slate-800 border-slate-700 text-white hover:bg-slate-700'} text-center`}>אימון {id}))}setWorkoutPlan(selectedPlanDate, null)} className="mt-4 flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-rose-500 hover:bg-rose-500/10 transition-all text-center"> הסר תכנוןsetSelectedPlanDate(null)} className="py-3 text-slate-600 font-bold text-sm text-center">ביטול
-)}
-); }; const renderSummary = () => (
-סטטוס אימונים
-{getLogBySession.length === 0 ? (
-טרם בוצעו אימונים
+                    {currentView === 'dashboard' && (
+                        <div className="w-full max-w-md space-y-4 animate-in">
+                            {Object.entries(WORKOUT_DATA).map(([key, workout]) => (
+                                <button 
+                                    key={key}
+                                    onClick={() => { setActiveWorkout(workout); setCurrentView('workout'); }}
+                                    className="w-full bg-slate-800 p-6 rounded-2xl border border-slate-700 hover:border-cyan-500 transition-all text-right"
+                                >
+                                    <div className="text-cyan-500 font-bold text-xl mb-1">אימון {key}</div>
+                                    <div className="text-white font-medium">{workout.title}</div>
+                                </button>
+                            ))}
+                        </div>
+                    )}
 
-) : ( getLogBySession.map((session, i) => (
-{session.logs.filter(l => l.type === 'strength').length} סטים
-{session.date}
-אימון {session.workoutId}
-{WORKOUT_DATA[session.workoutId]?.exercises.map(ex => { const logged = session.logs.filter(l => l.exerciseId === ex.id); const isCompleted = logged.length >= (ex.setsCount || 1) || logged.some(l => l.status === 'stato-dynamic-finished' || l.status === 'sets-finished'); return (
-{logged.length}/{ex.setsCount || 5}
-{ex.name}
-); })}
-)) )}
-); const renderTraining = () => { if (!activeWorkout) return null; return (
-setIsResting(false)} />
-setCurrentView('dashboard')} className="px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-400 text-xs font-black transition-colors hover:bg-slate-800 text-right">סגור
-אימון {activeWorkout.id}
-{activeWorkout.exercises.map((ex, idx) => (scrollToExercise(ex.id)} className={`flex-shrink-0 px-5 py-3 rounded-2xl border text-xs font-black transition-all ${focusedExId === ex.id ? 'bg-cyan-500 border-cyan-400 text-slate-950 shadow-lg scale-105' : completedExercisesIds.includes(ex.id) ? 'bg-lime-500/10 border-lime-500/30 text-lime-400' : 'bg-slate-800 border-slate-700 text-slate-500'}`}>{idx + 1}. {ex.name.split(' ')[0]}))}
-{activeWorkout.exercises.map((exercise, exIdx) => { const isExDone = completedExercisesIds.includes(exercise.id); const videoUrl = exercise.video ? `${exercise.video}?origin=${window.location.origin}&modestbranding=1&rel=0` : null; return (
-{exIdx + 1}.
-{exercise.name}
-{exercise.type === 'stato-dynamic' ? 'סטטו-דינאמי' : 'שיטה קלאסית'}{exercise.tempo && {exercise.tempo}}
-markExerciseDone(exercise.id)} className={`w-16 h-16 rounded-[24px] border-4 flex items-center justify-center transition-all ml-4 ${isExDone ? 'bg-lime-500 border-lime-400 shadow-2xl scale-110 ring-4 ring-lime-400/20' : 'bg-slate-900 border-slate-800 hover:border-lime-500/40'}`}>
-{exercise.video && (
+                    {currentView === 'workout' && activeWorkout && (
+                        <div className="w-full max-w-md animate-in">
+                            <button onClick={() => setCurrentView('dashboard')} className="mb-4 text-cyan-400 flex items-center gap-2"> חזור לתפריט</button>
+                            <h2 className="text-2xl font-bold mb-6 text-right">{activeWorkout.title}</h2>
+                            <div className="space-y-4">
+                                {activeWorkout.exercises.map((ex) => (
+                                    <div key={ex.id} className="bg-slate-800 p-4 rounded-xl border border-slate-700 text-right">
+                                        <div className="font-bold text-lg mb-2">{ex.name}</div>
+                                        <div className="text-slate-400 text-sm mb-4">
+                                            {ex.type === 'classic' ? `סטים: ${ex.setsCount} | חזרות: ${ex.reps.join(', ')}` : `סטים: ${ex.setsCount} | סטטו-דינמי`}
+                                        </div>
+                                        <div className="aspect-video w-full rounded-lg overflow-hidden bg-black">
+                                            <iframe 
+                                                className="w-full h-full"
+                                                src={ex.video} 
+                                                title={ex.name}
+                                                frameBorder="0" 
+                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                                allowFullScreen
+                                            ></iframe>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
 
-markExerciseDone(exercise.id)} isDone={isExDone} onMarkDone={() => markExerciseDone(exercise.id)} />) : (
-{Array.from({ length: exercise.setsCount }).map((_, sIdx) => { const isWarmup = sIdx === 0; const setKey = `${exercise.id}_${sIdx}`; const prevW = fixedPrevWeights[setKey]; const currentW = localWeights[setKey]; const isSetDone = sessionCompletedSets[setKey]; const isEditing = repsEditMode[setKey]; const displayedTarget = localReps[setKey] || exercise.reps?.[sIdx] || 'MAX'; const diff = currentW && prevW ? parseFloat(currentW) - prevW : 0; return (
-{isWarmup ? : null}{isSetDone ? 'סט הושלם' : isWarmup ? 'חימום (80% יכולת)' : `סט עבודה ${sIdx + 1}`} יעד: {displayedTarget.toString()}
-קודם
-{prevW ? `${prevW} ק"ג` : '--'}
-משקל 
-0
- setLocalWeights(p => ({ ...p, [setKey]: e.target.value }))} />
-חזרות setRepsEditMode(p => ({ ...p, [setKey]: !isEditing }))} className="text-cyan-600 hover:text-cyan-400 transition-colors">
-{displayedTarget.toString()}
- setLocalReps(p => ({ ...p, [setKey]: e.target.value }))} /> {isEditing && localReps[setKey] && (setRepsEditMode(p => ({ ...p, [setKey]: false }))} className="absolute -top-2 -right-2 bg-lime-500 text-slate-950 rounded-full p-2 shadow-lg animate-in zoom-in ring-2 ring-slate-900">)}
-. saveSet(exercise.id, sIdx)} className={`w-full h-20 rounded-2xl flex items-center justify-center transition-all ${isSetDone ? 'bg-lime-500 text-slate-950 shadow-[0_0_20px_rgba(132,204,22,0.4)] border-none' : 'bg-slate-900 border-2 border-slate-800 text-slate-500 hover:border-cyan-500/50 active:scale-90 shadow-lg'} text-center`}>
-{currentW && prevW && (
-0 ? 'bg-lime-500/20 text-lime-400 border-lime-500/40' : diff < 0 ? 'bg-rose-500/20 text-rose-400 border-rose-500/40' : 'bg-slate-900 text-slate-500 border-slate-800'} text-center`}>
-{diff > 0 ? : diff < 0 ? : null}{diff > 0 ? `עלייה! ${diff.toFixed(1)} +` : diff < 0 ? `ירידה ${Math.abs(diff).toFixed(1)} -` : 'ללא שינוי'} ק"ג
-)}
-); })}
-)}
-); })}
-setCurrentView('dashboard')} className="w-full py-10 bg-cyan-500 text-slate-950 rounded-[48px] font-black text-3xl shadow-2xl shadow-cyan-500/40 hover:scale-[1.02] active:scale-95 transition-all border-b-8 border-cyan-600 uppercase text-center">סיום אימון מלא
-); }; return (
-setCurrentView('journal')} className="w-12 h-12 bg-slate-900 rounded-2xl border border-slate-800 flex items-center justify-center shadow-lg transition-transform active:scale-90"> 
-Performance Elite
-ARIEL METHOD
-{currentView === 'dashboard' && renderDashboard()} {currentView === 'training' && renderTraining()} {currentView === 'journal' && renderJournal()} {currentView === 'summary' && renderSummary()}
-setCurrentView('summary')} className={`flex flex-col items-center gap-1 transition-all ${currentView === 'summary' ? 'text-cyan-400 scale-110' : 'text-slate-600'} text-right`}> סטטוס אימונים setCurrentView('dashboard')} className={`relative -top-8 w-20 h-20 rounded-[32px] flex items-center justify-center transition-all rotate-45 shadow-2xl ${currentView === 'dashboard' ? 'bg-cyan-500 text-slate-950 shadow-cyan-500/40 border-2 border-white/20' : 'bg-slate-800 text-slate-500 shadow-black'}`}>
- setCurrentView('journal')} className={`flex flex-col items-center gap-1 transition-all ${currentView === 'journal' ? 'text-cyan-400 scale-110' : 'text-slate-600'} text-right`}> יומן
-
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
-</script>
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
